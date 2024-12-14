@@ -3,6 +3,6 @@ from controller.main_controller import MainController
 
 if __name__ == "__main__":
     root = tk.Tk()
-    root.geometry("800x600")  # Tamaño inicial suficiente para ver el contenido
+    root.geometry("1520x750")  
     app = MainController(root)
     root.mainloop()
