@@ -1,41 +1,47 @@
+# controller/main_controller.py
 import tkinter as tk
-from model.db_connection import DBConnection
 
 class MainController:
     def __init__(self, root):
         self.root = root
         self.root.title("InventoryManagement")
-        self.db = DBConnection()
 
-        from controller.stonks_view_controller import StonksViewController
-        self.frame_stonks = tk.Frame(self.root)
-        self.stonks_controller = StonksViewController(self.frame_stonks, self, self.db)
+        from view.login_view import LoginView
+        from view.admin_view import AdminView
+        from view.product_management_view import ProductManagementView
+        from view.sales_view import SalesView
+        from view.sales_report_view import SalesReportView
+        from view.voucher_view import VoucherView
 
-        from controller.admin_view_controller import AdminViewController
+        # LoginView
+        self.frame_login = tk.Frame(self.root)
+        self.login_view = LoginView(self.frame_login, self)
+
+        # AdminView
         self.frame_admin = tk.Frame(self.root)
-        self.admin_controller = AdminViewController(self.frame_admin, self, self.db)
+        self.admin_view = AdminView(self.frame_admin, self)
 
-        from controller.product_management_view_controller import ProductManagementViewController
+        # ProductManagementView
         self.frame_product_mgmt = tk.Frame(self.root)
-        self.product_mgmt_controller = ProductManagementViewController(self.frame_product_mgmt, self, self.db)
+        self.product_mgmt_view = ProductManagementView(self.frame_product_mgmt, self)
 
-        from controller.sales_view_controller import SalesViewController
+        # SalesView
         self.frame_sales = tk.Frame(self.root)
-        self.sales_controller = SalesViewController(self.frame_sales, self, self.db)
+        self.sales_view = SalesView(self.frame_sales, self)
 
-        from controller.sales_report_view_controller import SalesReportViewController
+        # SalesReportView
         self.frame_sales_report = tk.Frame(self.root)
-        self.sales_report_controller = SalesReportViewController(self.frame_sales_report, self, self.db)
+        self.sales_report_view = SalesReportView(self.frame_sales_report, self)
 
-        from controller.voucher_view_controller import VoucherViewController
+        # VoucherView
         self.frame_voucher = tk.Frame(self.root)
-        self.voucher_controller = VoucherViewController(self.frame_voucher, self, self.db)
+        self.voucher_view = VoucherView(self.frame_voucher, self)
 
-        self.show_stonks_view()
+        self.show_login_view()  # Mostramos la vista principal (login)
 
-    def show_stonks_view(self):
+    def show_login_view(self):
         self.hide_all_frames()
-        self.frame_stonks.pack(fill="both", expand=True)
+        self.frame_login.pack(fill="both", expand=True)
 
     def show_admin_view(self):
         self.hide_all_frames()
@@ -53,9 +59,7 @@ class MainController:
         self.hide_all_frames()
         self.frame_sales_report.pack(fill="both", expand=True)
 
-    def show_voucher_view(self, receipt, change_due):
-        # Show voucher view with given data
-        self.voucher_controller.load_receipt(receipt, change_due)
+    def show_voucher_view(self):
         self.hide_all_frames()
         self.frame_voucher.pack(fill="both", expand=True)
 
