@@ -1,13 +1,20 @@
-# model/db_connection.py
 import sqlite3
 from model.product import Product
 from model.receipt import Receipt
 from model.sold_product import SoldProduct
 import datetime
+import os
+import sys
 
 class DBConnection:
     def __init__(self, db_path="data/local.db"):
-        self.conn = sqlite3.connect(db_path)
+        # Si el programa está empaquetado (frozen), utiliza sys._MEIPASS para obtener la carpeta temporal
+        if getattr(sys, 'frozen', False):
+            base_path = sys._MEIPASS
+        else:
+            base_path = os.path.abspath(".")
+        db_full_path = os.path.join(base_path, db_path)
+        self.conn = sqlite3.connect(db_full_path)
         self.conn.execute("PRAGMA foreign_keys = 1;")
         self.cursor = self.conn.cursor()
         self.create_tables()
@@ -71,7 +78,7 @@ class DBConnection:
         if row:
             return row[0]
         return None
-    
+
     def delete_category(self, category_name):
         """
         Elimina la categoría de la tabla 'categories' cuyo nombre sea category_name.
@@ -84,7 +91,6 @@ class DBConnection:
         except Exception as e:
             print("Error al eliminar categoría:", e)
             return False
-
 
     def get_products(self):
         products = []
@@ -242,5 +248,3 @@ class DBConnection:
         """
         self.cursor.execute("DELETE FROM products WHERE code = ?", (code,))
         self.conn.commit()
-
-
