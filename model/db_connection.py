@@ -1,3 +1,4 @@
+# model/db_connection.py
 import sqlite3
 from model.product import Product
 from model.receipt import Receipt
@@ -112,12 +113,21 @@ class DBConnection:
     def add_product(self, product):
         cat_id = self.get_category_id(product.category)
         if cat_id is None:
-            # If category doesn't exist, can't add product. Or add a new category automatically.
+            # If category doesn't exist, create it automatically
             self.add_category(product.category)
             cat_id = self.get_category_id(product.category)
         self.cursor.execute("""
-            INSERT INTO products (code, name, cost, price, stock, category, description) VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (product.code, product.name, product.cost, product.price, product.stock, cat_id, product.description))
+            INSERT INTO products (code, name, cost, price, stock, category, description)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (
+            product.code,
+            product.name,
+            product.cost,
+            product.price,
+            product.stock,
+            cat_id,
+            product.description
+        ))
         self.conn.commit()
 
     def update_product_name(self, code, name):
@@ -145,7 +155,6 @@ class DBConnection:
         self.conn.commit()
 
     def update_stock(self, code, quantity):
-        # quantity is added to current stock
         self.cursor.execute("SELECT stock FROM products WHERE code=?", (code,))
         row = self.cursor.fetchone()
         if row:
@@ -154,13 +163,18 @@ class DBConnection:
             self.conn.commit()
 
     def add_receipt(self, receipt):
-        # Insert receipt
         self.cursor.execute("""
             INSERT INTO receipts (total, date, time, payment_method)
             VALUES (?, ?, ?, ?)
-        """, (receipt.total_sale, receipt.date.isoformat(), receipt.time.strftime("%H:%M:%S"), receipt.payment_method))
+        """, (
+            receipt.total_sale,
+            receipt.date.isoformat(),
+            receipt.time.strftime("%H:%M:%S"),
+            receipt.payment_method
+        ))
         self.conn.commit()
         receipt_id = self.cursor.lastrowid
+
         # Insert sold products
         for sp in receipt.sold_products:
             self.cursor.execute("""
@@ -169,20 +183,28 @@ class DBConnection:
             # Update stock
             self.update_stock(sp.product.code, -sp.quantity)
         self.conn.commit()
-        # Update receipt id
+
+        # Actualiza el ID del recibo
         receipt.id = receipt_id
 
     def get_receipts_in_range(self, start_date, end_date):
-        # start_date and end_date are datetime.date objects
         start_str = start_date.isoformat()
         end_str = end_date.isoformat()
-        self.cursor.execute("SELECT idReceipt, total, date, time, payment_method FROM receipts WHERE date BETWEEN ? AND ?", (start_str, end_str))
+        self.cursor.execute("""
+            SELECT idReceipt, total, date, time, payment_method
+            FROM receipts
+            WHERE date BETWEEN ? AND ?
+        """, (start_str, end_str))
         rows = self.cursor.fetchall()
         receipts = []
         for r in rows:
-            rec = Receipt(id=r[0], total_sale=r[1], date=datetime.date.fromisoformat(r[2]), 
-                          time=datetime.datetime.strptime(r[3], "%H:%M:%S").time(),
-                          payment_method=r[4])
+            rec = Receipt(
+                id=r[0],
+                total_sale=r[1],
+                date=datetime.date.fromisoformat(r[2]),
+                time=datetime.datetime.strptime(r[3], "%H:%M:%S").time(),
+                payment_method=r[4]
+            )
             rec.sold_products = self.get_sold_products_for_receipt(rec.id)
             receipts.append(rec)
         return receipts
@@ -190,7 +212,6 @@ class DBConnection:
     def get_sold_products_for_receipt(self, receipt_id):
         self.cursor.execute("SELECT codeP, quantity FROM sold_products WHERE idReceipt=?", (receipt_id,))
         rows = self.cursor.fetchall()
-        from model.sold_product import SoldProduct
         sps = []
         for r in rows:
             p = self.get_product(r[0])
