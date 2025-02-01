@@ -1,6 +1,7 @@
-# view/sales_view.py
 import tkinter as tk
 from tkinter import ttk, messagebox
+from tkcalendar import DateEntry  # Para mostrar un calendario desplegable
+from utils.formatters import format_price  # Importamos la función para formatear precios
 
 class SalesView(tk.Frame):
     """
@@ -170,7 +171,7 @@ class SalesView(tk.Frame):
         )
         add_button.pack(pady=10)
 
-        # Botón para eliminar producto (puedes mantener el anterior o modificarlo según tu necesidad)
+        # Botón para eliminar producto
         delete_button = tk.Button(
             sidebar,
             text="Eliminar Producto",
@@ -189,7 +190,7 @@ class SalesView(tk.Frame):
         summary_frame = tk.Frame(sidebar, bg=gris_claro)
         summary_frame.pack(pady=20, anchor="w")
 
-        # Etiqueta del total
+        # Etiqueta del total (se formatea el número usando format_price)
         self.total_label = tk.Label(
             summary_frame,
             text="Total Venta: $ 0",
@@ -231,14 +232,13 @@ class SalesView(tk.Frame):
             self.tree.delete(item)
 
         if not sold_products:
-            # Tabla vacía
             self.tree.insert("", "end", values=("", "Tabla sin contenido", "", ""), tags=("placeholder",))
         else:
-            # Llenar con productos
+            # Llenar con productos: formateamos el valor con separador de miles
             for sp in sold_products:
                 code = sp.product.code
                 name = sp.product.name
-                price = f"{sp.product.price:.2f}"
+                price = format_price(sp.product.price, decimals=0)
                 quantity = sp.quantity
                 self.tree.insert("", "end", values=(code, name, price, quantity))
 

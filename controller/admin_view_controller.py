@@ -82,6 +82,29 @@ class AdminViewController:
             updated_cats = self.db.get_categories()
             self.view.set_categories(updated_cats)
 
+    def event_add_category(self):
+        """
+        Cuando se presiona "Agregar Categoría" (botón verde).
+        """
+        new_cat = self.view.get_new_category()
+        if new_cat == "":
+            messagebox.showerror("Invalid Category", "No text entered! Please enter a category name.")
+            return
+        
+        categories = self.db.get_categories()
+        if new_cat in categories:
+            messagebox.showwarning("Category Exists", f"This category already exists: {new_cat}")
+        else:
+            self.db.add_category(new_cat)
+            messagebox.showinfo("Category Added", f"Category '{new_cat}' added successfully.")
+            self.view.clear_new_category()
+            # Actualizar combo
+            updated_cats = self.db.get_categories()
+            self.view.set_categories(updated_cats)
+        self.main_controller.product_mgmt_controller.view.set_categories(updated_cats)
+
+
+
     def event_manage_products(self):
         """
         Botón "Gestionar Producto".

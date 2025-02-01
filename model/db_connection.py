@@ -71,6 +71,20 @@ class DBConnection:
         if row:
             return row[0]
         return None
+    
+    def delete_category(self, category_name):
+        """
+        Elimina la categoría de la tabla 'categories' cuyo nombre sea category_name.
+        Devuelve True si se eliminó correctamente o False en caso de error.
+        """
+        try:
+            self.cursor.execute("DELETE FROM categories WHERE category_name = ?", (category_name,))
+            self.conn.commit()
+            return True
+        except Exception as e:
+            print("Error al eliminar categoría:", e)
+            return False
+
 
     def get_products(self):
         products = []

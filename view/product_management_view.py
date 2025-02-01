@@ -1,7 +1,6 @@
-# view/product_management_view.py
-
 import tkinter as tk
 from tkinter import ttk
+from utils.formatters import format_price  # Si se usa para formatear precios en otros lugares
 
 class ProductManagementView(tk.Frame):
     """
@@ -60,8 +59,6 @@ class ProductManagementView(tk.Frame):
         body_frame = tk.Frame(self, bg=gris_claro)
         body_frame.place(relx=0, rely=0.15, relwidth=1, relheight=0.7)
 
-        # Campos de la izquierda (aprox. 70% del ancho)
-        # Usaremos place con proporciones
         # Fila 1: Código, Nombre
         lbl_code = tk.Label(body_frame, text="Código", bg=gris_claro, font=font_label)
         lbl_code.place(relx=0.02, rely=0.05)
@@ -94,6 +91,18 @@ class ProductManagementView(tk.Frame):
         lbl_category.place(relx=0.02, rely=0.45)
         self.cmb_category = ttk.Combobox(body_frame, values=[], state="readonly", width=15)
         self.cmb_category.place(relx=0.02, rely=0.52)
+
+        # Nuevo botón para borrar categoría (se ubica debajo del combobox)
+        self.delete_category_button = tk.Button(
+            body_frame,
+            text="Eliminar Categoría",
+            bg=rojo,
+            fg=blanco,
+            font=font_button,
+            command=self.controller.event_delete_category  # Llama al método en el controller
+        )
+        # Ajustamos la posición; por ejemplo, a relx=0.02, rely=0.60
+        self.delete_category_button.place(relx=0.02, rely=0.60)
 
         lbl_desc = tk.Label(body_frame, text="Descripción", bg=gris_claro, font=font_label)
         lbl_desc.place(relx=0.25, rely=0.45)
@@ -130,7 +139,6 @@ class ProductManagementView(tk.Frame):
         btn_add_stock.place(relx=0.75, rely=0.29, relwidth=0.2, relheight=0.1)
 
         # Botones de Agregar/Modificar/Eliminar
-        # Los ubicamos en la parte inferior, centrados
         btn_add_product = tk.Button(
             body_frame,
             text="Agregar Producto",
@@ -171,7 +179,6 @@ class ProductManagementView(tk.Frame):
             font=("Sans-serif", 16, "bold"),
             command=self.controller.event_go_back_to_inventory
         )
-        # Lo centramos horizontalmente
         btn_back_inventory.place(relx=0.35, rely=0.2, relwidth=0.3, relheight=0.6)
 
     # ------------------------------------------------------
@@ -236,3 +243,13 @@ class ProductManagementView(tk.Frame):
         self.set_description("")
         if self.cmb_category.cget("values"):
             self.cmb_category.current(0)
+
+    # Métodos para manejar la categoría en el combobox
+    def get_selected_category(self):
+        return self.cmb_category.get().strip()
+
+    def clear_new_category(self):
+        self.new_category_entry.delete(0, "end")
+
+    def get_new_category(self):
+        return self.new_category_entry.get().strip()

@@ -1,7 +1,6 @@
-# view/voucher_view.py
-
 import tkinter as tk
 from tkinter import ttk
+from utils.formatters import format_price  # Importamos la función para formatear precios
 
 class VoucherView(tk.Toplevel):
     """
@@ -158,10 +157,11 @@ class VoucherView(tk.Toplevel):
         for item in self.tree.get_children():
             self.tree.delete(item)
 
-        # Insertar filas
+        # Insertar filas en la tabla, usando format_price para total parcial
         for p in productos:
-            # p = (cantidad, nombre, parcial)
-            self.tree.insert("", "end", values=(p[0], p[1], f"${p[2]:.2f}"))
+            # p = (cantidad, nombre, total_parcial)
+            self.tree.insert("", "end", values=(p[0], p[1], f"${format_price(p[2], decimals=0)}"))
 
-        self.total_label.config(text=f"Total: ${total:.2f}")
-        self.vueltas_label.config(text=f"Vueltas: ${vueltas:.2f}")
+        # Actualizamos total y vueltas, usando también format_price para tener el mismo formato
+        self.total_label.config(text=f"Total: ${format_price(total, decimals=0)}")
+        self.vueltas_label.config(text=f"Vueltas: ${format_price(vueltas, decimals=0)}")

@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 from tkcalendar import DateEntry  # Para mostrar un calendario desplegable
+from utils.formatters import format_price  # Importa la función para formatear precios
 
 class SalesReportView(tk.Frame):
     def __init__(self, parent, controller):
@@ -190,11 +191,16 @@ class SalesReportView(tk.Frame):
             self.sales_tree.insert("", "end", values=("", "Tabla sin contenido", "", ""))
             return
         
-        # Inserta cada producto vendido en la tabla
+        # Inserta cada producto vendido en la tabla, formateando el total con separador de miles
         for sp in sold_products:
             self.sales_tree.insert(
                 "", "end",
-                values=(sp.get_code(), sp.product.name, sp.quantity, f"${sp.get_total_partial():.2f}")
+                values=(
+                    sp.get_code(),
+                    sp.product.name,
+                    sp.quantity,
+                    f"${format_price(sp.get_total_partial(), decimals=0)}"
+                )
             )
     
     # Método para actualizar los totales en el resumen
@@ -212,4 +218,3 @@ class SalesReportView(tk.Frame):
     def on_back_click(self):
         """Al hacer clic en 'Volver al Menú', se llama al controlador para regresar a la vista principal."""
         self.controller.event_back()
-
