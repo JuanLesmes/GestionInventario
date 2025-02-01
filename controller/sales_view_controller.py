@@ -1,5 +1,4 @@
 # controller/sales_view_controller.py
-
 import tkinter as tk
 from tkinter import simpledialog, messagebox
 from model.sold_product import SoldProduct
@@ -41,18 +40,18 @@ class SalesViewController:
         self.main_controller.show_login_view()
 
     def event_add_product(self):
-        """Botón 'Agregar Producto'."""
-        code = simpledialog.askstring("Agregar Producto", "Ingrese código del Producto:")
-        if code is None or code.strip() == "":
+        """Botón 'Agregar Producto' que toma los datos de los Entry de la vista."""
+        # Obtiene los datos de los campos de la vista
+        code = self.view.product_code_entry.get().strip()
+        qty_str = self.view.product_qty_entry.get().strip()
+        
+        if code == "" or qty_str == "":
+            messagebox.showwarning("Error", "Debes ingresar el código y la cantidad.")
             return
 
-        product = self.db.get_product(code.strip())
-        if product is None or product.stock <= 0:
-            messagebox.showwarning("Error", "Producto no encontrado o sin stock.")
-            return
-
-        qty_str = simpledialog.askstring("Cantidad", "Ingrese la cantidad:")
-        if qty_str is None or qty_str.strip() == "":
+        product = self.db.get_product(code)
+        if product is None:
+            messagebox.showwarning("Error", "Producto no encontrado.")
             return
 
         try:
@@ -60,29 +59,37 @@ class SalesViewController:
             if qty <= 0:
                 messagebox.showwarning("Error", "La cantidad debe ser mayor a 0.")
                 return
-            if qty > product.stock:
-                messagebox.showwarning("Error", f"No hay suficiente stock. Disponible: {product.stock}")
+        except ValueError:
+            messagebox.showerror("Error", "La cantidad debe ser un número entero.")
+            return
+
+        if qty > product.stock:
+            messagebox.showwarning("Error", f"No hay suficiente stock. Disponible: {product.stock}")
+            return
+
+        # Verifica si el producto ya está en la lista de sold_products
+        for sp in self.sold_products:
+            if sp.get_code() == product.code:
+                new_qty = sp.quantity + qty
+                if new_qty > product.stock:
+                    messagebox.showwarning("Error", f"No hay suficiente stock. Disponible: {product.stock}")
+                    return
+                sp.quantity = new_qty
+                sp.calculate_total_partial()
+                self.refresh_sales_table()
+                # Limpia los campos de entrada
+                self.view.product_code_entry.delete(0, tk.END)
+                self.view.product_qty_entry.delete(0, tk.END)
                 return
 
-            # Ver si YA está en la lista de sold_products
-            for sp in self.sold_products:
-                if sp.get_code() == product.code:
-                    new_qty = sp.quantity + qty
-                    if new_qty > product.stock:
-                        messagebox.showwarning("Error", f"No hay suficiente stock. Disponible: {product.stock}")
-                        return
-                    sp.quantity = new_qty
-                    sp.calculate_total_partial()
-                    self.refresh_sales_table()
-                    return
+        # Si es un producto nuevo en la venta
+        sp = SoldProduct(0, product, qty)
+        self.sold_products.append(sp)
+        self.refresh_sales_table()
 
-            # Si no está, agregamos un SoldProduct nuevo
-            sp = SoldProduct(0, product, qty)
-            self.sold_products.append(sp)
-            self.refresh_sales_table()
-
-        except ValueError:
-            messagebox.showerror("Error", "Cantidad inválida. Ingrese un número entero.")
+        # Limpia los campos de entrada después de agregar
+        self.view.product_code_entry.delete(0, tk.END)
+        self.view.product_qty_entry.delete(0, tk.END)
 
     def event_remove_product(self):
         """Botón 'Eliminar Producto'."""
@@ -121,7 +128,6 @@ class SalesViewController:
                 return
             change_due = received - total_sale
             self.generate_receipt("Cash", total_sale, change_due)
-
         except ValueError:
             messagebox.showerror("Error", "Valor recibido inválido.")
 

@@ -219,3 +219,14 @@ class DBConnection:
                 sp = SoldProduct(receipt_id, p, r[1])
                 sps.append(sp)
         return sps
+    
+    def delete_product(self, code):
+        """
+        Elimina el producto de la tabla 'products' por su código.
+        Asegúrate de tener PRAGMA foreign_keys=1 y ON DELETE CASCADE 
+        si hay referencias a este producto en otras tablas.
+        """
+        self.cursor.execute("DELETE FROM products WHERE code = ?", (code,))
+        self.conn.commit()
+
+

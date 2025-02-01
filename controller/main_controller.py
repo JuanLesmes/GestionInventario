@@ -14,7 +14,6 @@ class MainController:
         from view.login_view import LoginView
         from view.admin_view import AdminView
         from view.product_management_view import ProductManagementView
-        # from view.sales_view import SalesView  # YA NO directamente
         from view.sales_report_view import SalesReportView
         from view.voucher_view import VoucherView
 
@@ -29,7 +28,9 @@ class MainController:
 
         # ProductManagementView
         self.frame_product_mgmt = tk.Frame(self.root)
-        self.product_mgmt_view = ProductManagementView(self.frame_product_mgmt, self)
+        from controller.product_management_view_controller import ProductManagementViewController
+        self.product_mgmt_controller = ProductManagementViewController(self.frame_product_mgmt, self, self.db)
+
 
         # SalesView + Controller
         self.frame_sales = tk.Frame(self.root)
@@ -39,8 +40,9 @@ class MainController:
 
         # SalesReportView
         self.frame_sales_report = tk.Frame(self.root)
-        self.sales_report_view = SalesReportView(self.frame_sales_report, self)
-
+        from controller.sales_report_view_controller import SalesReportViewController
+        self.sales_report_controller = SalesReportViewController(self.frame_sales_report, self, self.db)
+        
         # Mostramos la vista principal
         self.show_login_view()
 
@@ -64,6 +66,7 @@ class MainController:
     def show_sales_report_view(self):
         self.hide_all_frames()
         self.frame_sales_report.pack(fill="both", expand=True)
+
 
 
     def show_voucher_view(self, receipt, change_due):

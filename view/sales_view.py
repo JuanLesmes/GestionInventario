@@ -1,6 +1,6 @@
 # view/sales_view.py
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
 
 class SalesView(tk.Frame):
     """
@@ -8,7 +8,7 @@ class SalesView(tk.Frame):
     Tiene:
      - Cabecera con título y botón "Volver al Menú".
      - Tabla de productos a la izquierda.
-     - Barra lateral derecha con botones para Agregar/Eliminar, Total y Entry "Recibe".
+     - Barra lateral derecha con campos para ingresar Código y Cantidad, botones para Agregar/Eliminar, Total y Entry "Recibe".
      - Barra inferior con botones de pago.
     """
     def __init__(self, parent, controller):
@@ -140,6 +140,21 @@ class SalesView(tk.Frame):
         sidebar = tk.Frame(main_frame, bg=gris_claro)
         sidebar.pack(side="right", fill="y", padx=20, pady=20)
 
+        # --- Bloque para Agregar Producto en la misma pestaña ---
+        input_frame = tk.Frame(sidebar, bg=gris_claro)
+        input_frame.pack(pady=10, anchor="w")
+
+        # Etiqueta y Entry para el Código del Producto
+        tk.Label(input_frame, text="Código:", bg=gris_claro, font=("Sans-serif", 12)).grid(row=0, column=0, sticky="w", padx=5, pady=2)
+        self.product_code_entry = tk.Entry(input_frame, width=20)
+        self.product_code_entry.grid(row=0, column=1, padx=5, pady=2)
+
+        # Etiqueta y Entry para la Cantidad
+        tk.Label(input_frame, text="Cantidad:", bg=gris_claro, font=("Sans-serif", 12)).grid(row=1, column=0, sticky="w", padx=5, pady=2)
+        self.product_qty_entry = tk.Entry(input_frame, width=10)
+        self.product_qty_entry.grid(row=1, column=1, padx=5, pady=2)
+
+        # Botón para agregar el producto usando los datos de los Entry
         add_button = tk.Button(
             sidebar,
             text="Agregar Producto",
@@ -151,10 +166,11 @@ class SalesView(tk.Frame):
             bd=0,
             highlightthickness=0,
             cursor="hand2",
-            command=self.controller.event_add_product  # Lógica en el controller
+            command=self.controller.event_add_product  # Llama a la lógica en el controller
         )
         add_button.pack(pady=10)
 
+        # Botón para eliminar producto (puedes mantener el anterior o modificarlo según tu necesidad)
         delete_button = tk.Button(
             sidebar,
             text="Eliminar Producto",
@@ -237,80 +253,3 @@ class SalesView(tk.Frame):
         Retorna el texto que está en el Entry de 'Recibe'.
         """
         return self.recibe_entry.get()
-    def event_add_product(self):
-        # Creamos una ventana emergente
-        top = tk.Toplevel(self.parent_frame)
-        top.title("Agregar Producto")
-        top.grab_set()  # Para que sea modal, opcional
-
-        # Etiqueta y Entry para Código
-        tk.Label(top, text="Código del Producto:").pack(pady=5)
-        entry_code = tk.Entry(top)
-        entry_code.pack(pady=5)
-
-        # Etiqueta y Entry para Cantidad
-        tk.Label(top, text="Cantidad:").pack(pady=5)
-        entry_qty = tk.Entry(top)
-        entry_qty.pack(pady=5)
-
-        def on_ok():
-            code = entry_code.get().strip()
-            qty_str = entry_qty.get().strip()
-            if not code or not qty_str:
-                messagebox.showwarning("Error", "Debes ingresar código y cantidad.")
-                return
-
-            # Procesar
-            try:
-                qty = int(qty_str)
-            except ValueError:
-                messagebox.showerror("Error", "La cantidad debe ser un número entero.")
-                return
-
-            if qty <= 0:
-                messagebox.showwarning("Error", "Cantidad debe ser > 0.")
-                return
-
-            product = self.db.get_product(code)
-            if product is None or product.stock <= 0:
-                messagebox.showwarning("Error", "Producto no encontrado o sin stock.")
-                return
-            if qty > product.stock:
-                messagebox.showwarning("Error", f"No hay suficiente stock. Disponible: {product.stock}")
-                return
-
-            # Si el producto ya estaba en la venta:
-            for sp in self.sold_products:
-                if sp.get_code() == product.code:
-                    new_qty = sp.quantity + qty
-                    if new_qty > product.stock:
-                        messagebox.showwarning("Error", f"No hay suficiente stock. Disponible: {product.stock}")
-                        return
-                    sp.quantity = new_qty
-                    sp.calculate_total_partial()
-                    self.refresh_sales_table()
-                    top.destroy()  # Cerrar la ventana
-                    return
-
-            # Si es un producto nuevo en la venta
-            from model.sold_product import SoldProduct
-            sp = SoldProduct(0, product, qty)
-            self.sold_products.append(sp)
-            self.refresh_sales_table()
-
-            top.destroy()  # Cerrar ventana
-
-        # Botón Aceptar
-        tk.Button(top, text="Aceptar", command=on_ok).pack(pady=10)
-
-        # Botón Cancelar
-        tk.Button(top, text="Cancelar", command=top.destroy).pack()
-
-        # Centrar la ventana (opcional)
-        top.update_idletasks()
-        w = top.winfo_width()
-        h = top.winfo_height()
-        x = (top.winfo_screenwidth() // 2) - (w // 2)
-        y = (top.winfo_screenheight() // 2) - (h // 2)
-        top.geometry(f"+{x}+{y}")
-

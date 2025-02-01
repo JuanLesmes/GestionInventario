@@ -14,3 +14,6 @@ class SoldProduct:
 
     def get_code(self):
         return self.product.code
+
+    def get_total_partial(self):
+        return self.total_partial
