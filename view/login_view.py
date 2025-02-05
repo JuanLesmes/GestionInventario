@@ -1,7 +1,7 @@
-# view/login_view.py
 import tkinter as tk
 from PIL import Image, ImageTk
 import os
+import sys
 
 class LoginView(tk.Frame):
     def __init__(self, parent, controller):
@@ -10,6 +10,15 @@ class LoginView(tk.Frame):
         self.configure(width=800, height=600)
         self.create_widgets()
         self.pack(fill="both", expand=True)
+
+    def get_resource_path(self, relative_path):
+        """Retorna la ruta correcta de la imagen, ya sea en código fuente o en PyInstaller."""
+        if getattr(sys, 'frozen', False):  # Si el programa está empaquetado con PyInstaller
+            base_path = sys._MEIPASS
+        else:
+            base_path = os.path.abspath(".")  # Modo normal (cuando se ejecuta como script)
+
+        return os.path.join(base_path, relative_path)
 
     def create_widgets(self):
         # Colores
@@ -45,22 +54,22 @@ class LoginView(tk.Frame):
             "cursor": "hand2"
         }
 
-        # Botón "Ingreso a Ventas" -> show_sales_view()
+        # Botón "Ingreso a Ventas"
         ventas_button = tk.Button(container_left, text="Ingreso a Ventas", **btn_config,
                                   command=self.controller.show_sales_view)
         ventas_button.pack(pady=10)
 
-        # Botón "Control de Inventario" -> show_admin_view() (o product_management_view si así lo prefieres)
+        # Botón "Control de Inventario"
         inventario_button = tk.Button(container_left, text="Control de Inventario", **btn_config,
                                       command=self.controller.show_admin_view)
         inventario_button.pack(pady=10)
 
-        # Botón "Reporte de Ventas" -> show_sales_report_view()
+        # Botón "Reporte de Ventas"
         reporte_button = tk.Button(container_left, text="Reporte de Ventas", **btn_config,
                                    command=self.controller.show_sales_report_view)
         reporte_button.pack(pady=10)
 
-        # Botón "Salir" -> cerrar la aplicación (self.controller.root.destroy() asumiendo que main_controller tiene acceso)
+        # Botón "Salir"
         exit_button = tk.Button(container_left, text="Salir", 
                                 width=10, height=1,
                                 bg=marron_oscuro, fg="#FFFFFF",
@@ -83,24 +92,21 @@ class LoginView(tk.Frame):
                                   highlightthickness=2)
         logo_container.place(relx=0.5, rely=0.5, anchor="center")
 
-        logo_path = "images/logo.png"
-        abs_path = os.path.abspath(logo_path)
-        print("Buscando imagen en:", abs_path)
+        # Usar la función get_resource_path para obtener la ruta correcta
+        logo_path = self.get_resource_path("images/logo.png")
+        print(f"Buscando imagen en: {logo_path}")  # Para depuración
 
-        if os.path.exists(logo_path):
-            # Cargamos imagen sin try/except para ver error si lo hay
+        try:
             img = Image.open(logo_path)
-            # Si PIL es muy reciente, ANTIALIAS se cambió por Image.Resampling.LANCZOS:
             img = img.resize((500, 500), Image.Resampling.LANCZOS)
             logo_img = ImageTk.PhotoImage(img)
             logo_label = tk.Label(logo_container, image=logo_img, bg=fondo_blanco)
             logo_label.image = logo_img  # Mantener referencia
             logo_label.pack(expand=True)
-        else:
-            print("No se encontró la imagen en la ruta:", abs_path)
+        except Exception as e:
+            print(f"Error al cargar la imagen: {e}")
             no_logo_label = tk.Label(logo_container, text="LOGO", bg=fondo_blanco, fg=turquesa, font=("Arial", 20))
             no_logo_label.pack(expand=True)
 
     def exit_app(self):
-        # Cerrar la ventana principal (root)
         self.controller.root.destroy()

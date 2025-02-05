@@ -55,7 +55,7 @@ class DBConnection:
             codeP TEXT,
             quantity INTEGER,
             FOREIGN KEY(idReceipt) REFERENCES receipts(idReceipt),
-            FOREIGN KEY(codeP) REFERENCES products(code)
+            FOREIGN KEY(codeP) REFERENCES products(code) ON DELETE CASCADE
         );
         """)
         self.conn.commit()
@@ -248,3 +248,16 @@ class DBConnection:
         """
         self.cursor.execute("DELETE FROM products WHERE code = ?", (code,))
         self.conn.commit()
+
+    def clear_database(self):
+        """Elimina todos los datos de las tablas, incluyendo ventas, recibos, productos y categorías."""
+        try:
+            # IMPORTANTE: Respetar el orden para evitar problemas de claves foráneas
+            self.cursor.execute("DELETE FROM sold_products;")  # Borra productos vendidos
+            self.cursor.execute("DELETE FROM receipts;")       # Borra recibos de venta
+            self.cursor.execute("DELETE FROM products;")       # Borra productos del inventario
+            self.cursor.execute("DELETE FROM categories;")     # Borra todas las categorías
+            self.conn.commit()
+            print("Base de datos limpiada con éxito.")
+        except Exception as e:
+            print("Error al limpiar la base de datos:", e)

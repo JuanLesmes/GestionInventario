@@ -77,3 +77,14 @@ class SalesReportViewController:
             elif r.payment_method == "Transfer":
                 transfer += r.total_sale
         return total, cash, card, transfer
+    
+    def event_clear_database(self):
+        """Confirma y borra todos los datos de la base de datos, incluyendo ventas."""
+        confirm = messagebox.askyesno(
+            "Confirmar eliminación",
+            "⚠️ Esto eliminará TODAS las ventas, productos y categorías. ¿Está seguro?"
+        )
+
+        if confirm:
+            self.db.clear_database()  # Llamamos al método corregido en DBConnection
+            messagebox.showinfo("Base de Datos", "Todos los datos han sido eliminados con éxito.")

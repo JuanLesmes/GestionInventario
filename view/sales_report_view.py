@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
 from tkcalendar import DateEntry  # Para mostrar un calendario desplegable
 from utils.formatters import format_price  # Importa la función para formatear precios
 
@@ -36,8 +36,7 @@ class SalesReportView(tk.Frame):
         # ----------------------------------------------------------------
         # 1. Encabezado: Título "Reporte De Ventas" sobre fondo turquesa
         # ----------------------------------------------------------------
-        header_height = 60
-        header_frame = tk.Frame(self, bg=turquesa, height=header_height)
+        header_frame = tk.Frame(self, bg=turquesa, height=60)
         header_frame.pack(side="top", fill="x")
         header_frame.pack_propagate(False)
         
@@ -149,7 +148,21 @@ class SalesReportView(tk.Frame):
         )
         back_button.config(width=14, height=2)
         back_button.pack(side="bottom", pady=20)
-
+        
+        # Nuevo botón pequeño para limpiar la base de datos, colocado debajo del botón "Volver al Menú"
+        clear_db_button = tk.Button(
+            right_frame,
+            text="Limpiar DB",
+            bg="#FF0000",
+            fg="#FFFFFF",
+            font=("Sans-serif", 10, "bold"),
+            bd=0,
+            cursor="hand2",
+            command=self.on_clear_db_click  # Llama al método que se encargará de limpiar la DB
+        )
+        clear_db_button.config(width=10, height=1)
+        clear_db_button.pack(side="bottom", pady=(0, 5))
+        
     def create_table_styles(self):
         """Define el estilo personalizado para la tabla."""
         style = ttk.Style()
@@ -214,7 +227,11 @@ class SalesReportView(tk.Frame):
     def on_search_click(self):
         """Al hacer clic en 'Buscar', se llama al controlador para procesar la búsqueda."""
         self.controller.event_search()
-
+    
     def on_back_click(self):
         """Al hacer clic en 'Volver al Menú', se llama al controlador para regresar a la vista principal."""
         self.controller.event_back()
+    
+    def on_clear_db_click(self):
+        """Al hacer clic en 'Limpiar DB', se llama al método correspondiente en el controlador."""
+        self.controller.event_clear_database()

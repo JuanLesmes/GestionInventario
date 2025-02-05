@@ -166,12 +166,17 @@ class ProductManagementViewController:
 
         confirm = messagebox.askyesno(
             "Confirmar",
-            f"¿Está seguro de eliminar el producto '{product.name}' (código {code})?"
+            f"¿Está seguro de eliminar el producto '{product.name}' (código {code})? Esto también eliminará sus referencias en las ventas."
         )
         if confirm:
+            # Eliminar registros en sold_products asociados al producto
+            self.db.cursor.execute("DELETE FROM sold_products WHERE codeP = ?", (code,))
+            self.db.conn.commit()
+            # Ahora, eliminar el producto
             self.db.delete_product(code)
             messagebox.showinfo("Borrado", f"Producto {code} eliminado.")
             self.view.clear_fields()
+
 
     def event_delete_category(self):
         """
