@@ -5,7 +5,7 @@ a = Analysis(
     ['run.py'],
     pathex=[],
     binaries=[],
-    datas=[('data', 'data'), ('images', 'images')],
+    datas=[('data/local.db', 'data'), ('images/logo.png', 'images')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},

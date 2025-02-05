@@ -1,4 +1,3 @@
-# model/database_manager.py
 import sqlite3
 
 class DatabaseManager:
@@ -8,7 +7,6 @@ class DatabaseManager:
         self._initialize_tables()
 
     def _initialize_tables(self):
-        # Crear la tabla de productos si no existe
         self.cur.execute("""
             CREATE TABLE IF NOT EXISTS productos (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
