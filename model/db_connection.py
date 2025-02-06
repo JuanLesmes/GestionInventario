@@ -156,7 +156,7 @@ class DBConnection:
         """, (product.code, product.name, product.cost, product.price, product.stock, cat_id, product.description))
         self.conn.commit()
 
-    def update_product(self, code, name, cost, price, stock, category, description):
+    def update_product(self, name, cost, price, stock, category, description, code):
         """Actualiza los datos de un producto."""
         cat_id = self.get_category_id(category)
         if cat_id is None:
@@ -192,6 +192,39 @@ class DBConnection:
             self.update_stock(sp.product.code, -sp.quantity)
         self.conn.commit()
         receipt.id = receipt_id
+    
+    def get_receipts_in_range(self, start_date, end_date):
+        start_str = start_date.isoformat()
+        end_str = end_date.isoformat()
+        self.cursor.execute("""
+            SELECT idReceipt, total, date, time, payment_method
+            FROM receipts
+            WHERE date BETWEEN ? AND ?
+        """, (start_str, end_str))
+        rows = self.cursor.fetchall()
+        receipts = []
+        for r in rows:
+            rec = Receipt(
+                id=r[0],
+                total_sale=r[1],
+                date=datetime.date.fromisoformat(r[2]),
+                time=datetime.datetime.strptime(r[3], "%H:%M:%S").time(),
+                payment_method=r[4]
+            )
+            rec.sold_products = self.get_sold_products_for_receipt(rec.id)
+            receipts.append(rec)
+        return receipts
+
+    def get_sold_products_for_receipt(self, receipt_id):
+        self.cursor.execute("SELECT codeP, quantity FROM sold_products WHERE idReceipt=?", (receipt_id,))
+        rows = self.cursor.fetchall()
+        sps = []
+        for r in rows:
+            p = self.get_product(r[0])
+            if p:
+                sp = SoldProduct(receipt_id, p, r[1])
+                sps.append(sp)
+        return sps
 
     def delete_product(self, code):
         """Elimina un producto por su código."""

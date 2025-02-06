@@ -144,14 +144,11 @@ class ProductManagementViewController:
             messagebox.showerror("Error", "Stock, Costo y Precio deben ser numéricos.")
             return
 
-        self.db.update_product_name(code, name)
-        self.db.update_stock(code, stock - product.stock)
-        self.db.update_cost(code, cost)
-        self.db.update_price(code, price)
-        self.db.update_description(code, desc)
-        self.db.update_category(code, category)
+        # Se realiza una única llamada para actualizar todos los campos del producto.
+        self.db.update_product(name, cost, price, stock, category, desc, code)
 
         messagebox.showinfo("Éxito", f"Producto '{code}' modificado correctamente.")
+
 
     def event_delete_product(self):
         code = self.view.get_code()
